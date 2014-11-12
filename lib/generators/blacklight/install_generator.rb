@@ -21,20 +21,7 @@ module Blacklight
          """
 
     def install_jettywrapper
-      return unless options[:jettywrapper]
-      gem "jettywrapper", "~> 1.7"
-
-      copy_file "config/jetty.yml"
-
-      append_to_file "Rakefile",
-        "\nZIP_URL = \"https://github.com/projectblacklight/blacklight-jetty/archive/v4.9.0.zip\"\n" +
-        "require 'jettywrapper'\n"
-    end
-
-    def bundle_install
-      Bundler.with_clean_env do
-        run "bundle install"
-      end
+      generate "blacklight:jettywrapper" if options[:jettywrapper]
     end
 
     # Copy all files in templates/public/ directory to public/
@@ -44,31 +31,19 @@ module Blacklight
       generate "blacklight:assets"
     end
 
-    def generate_blacklight_models
-
-      generator_args = []
+    def generate_devise_users
       if options[:devise]
-        generator_args << "--devise #{options[:devise]}"
+        generate 'blacklight:users', model_name
       end
-      
-      generate 'blacklight:models', generator_args.join(" ")
     end
 
-    # Add Blacklight to the application controller
-    def inject_blacklight_controller_behavior    
-  #    prepend_file("app/controllers/application_controller.rb", "require 'blacklight/controller'\n\n")
-      inject_into_class "app/controllers/application_controller.rb", "ApplicationController" do
-        "  # Adds a few additional behaviors into the application controller \n " +        
-          "  include Blacklight::Controller\n" + 
-          "  # Please be sure to impelement current_user and user_session. Blacklight depends on \n" +
-          "  # these methods in order to perform user specific actions. \n\n" +
-          "  layout 'blacklight'\n\n"
-      end
+    def generate_blacklight_models
+      generate 'blacklight:models'
     end
-    
+
     # Generate blacklight catalog controller
     def create_blacklight_catalog
-      copy_file "catalog_controller.rb", "app/controllers/catalog_controller.rb"
+      generate "blacklight:controllers"
     end 
 
     def generate_blacklight_marc_demo
@@ -81,14 +56,6 @@ module Blacklight
 
         generate 'blacklight_marc:marc'
       end
-    end
-
-    def inject_blacklight_routes
-      # These will end up in routes.rb file in reverse order
-      # we add em, since each is added at the top of file. 
-      # we want "root" to be FIRST for optimal url generation. 
-      route('blacklight_for :catalog')
-      route('root :to => "catalog#index"')
     end
 
     def add_sass_configuration
