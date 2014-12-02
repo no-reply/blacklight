@@ -2,6 +2,8 @@ require 'spec_helper'
 
 describe Blacklight::SolrRepository do
 
+  it_behaves_like 'a repository'
+
   let :blacklight_config do
     CatalogController.blacklight_config.deep_copy
   end
