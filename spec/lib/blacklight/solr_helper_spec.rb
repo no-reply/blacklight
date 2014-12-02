@@ -18,11 +18,12 @@ describe Blacklight::SolrHelper do
     include Blacklight::SolrHelper
 
     attr_accessor :blacklight_config
-    attr_accessor :blacklight_solr
+    attr_accessor :solr_repository
 
     def initialize blacklight_config, blacklight_solr
       self.blacklight_config = blacklight_config
-      self.blacklight_solr = blacklight_solr
+      self.solr_repository = Blacklight::SolrRepository.new(blacklight_config)
+      self.solr_repository.blacklight_solr = blacklight_solr
     end
 
     def params
@@ -684,28 +685,19 @@ describe Blacklight::SolrHelper do
       expect(solr_params[:"f.#{@facet_field}.facet.sort"]).to be_blank
     end
 
-    it "uses the field-specific sort" do
-      solr_params = subject.solr_facet_params('format_ordered')
-      expect(solr_params[:"f.format_ordered.facet.sort"]).to eq :count
-    end
-
     it 'uses sort provided in the parameters' do
       solr_params = subject.solr_facet_params(@facet_field, @sort_key => "index")
       expect(solr_params[:"f.#{@facet_field}.facet.sort"]).to eq 'index'
     end
+
     it "comes up with the same params as #solr_search_params to constrain context for facet list" do
       search_params = {:q => 'tibetan history', :f=> {:format=>'Book', :language_facet=>'Tibetan'}}
-      solr_search_params = subject.solr_search_params( search_params )
       solr_facet_params = subject.solr_facet_params('format', search_params)
 
-      solr_search_params.each_pair do |key, value|
-        # The specific params used for fetching the facet list we
-        # don't care about.
-        next if ['facets', "facet.field", 'rows', 'facet.limit', 'facet.offset', 'facet.sort'].include?(key)
-        # Everything else should match
-        expect(solr_facet_params[key]).to eq value
-      end
-
+      expect(solr_facet_params).to include :"facet.field" => "format"
+      expect(solr_facet_params).to include :"f.format.facet.limit" => 21
+      expect(solr_facet_params).to include :"f.format.facet.offset" => 0
+      expect(solr_facet_params).to include :"rows" => 0
     end
   end
   describe "for facet limit parameters config ed" do                
@@ -1273,17 +1265,17 @@ describe Blacklight::SolrHelper do
         allow(@mock_response).to receive_messages(documents: [])
       end
       it "should contruct a solr query based on the field and value pair" do
-        allow(subject).to receive(:find).with(hash_including(:q => "field_name:(value)")).and_return(@mock_response)
+        allow(subject.solr_repository).to receive(:send_and_receive).with('select', hash_including("q" => "{!lucene}field_name:(value)")).and_return(@mock_response)
         subject.get_solr_response_for_field_values('field_name', 'value')
       end
 
       it "should OR multiple values together" do
-        allow(subject).to receive(:find).with(hash_including(:q => "field_name:(a OR b)")).and_return(@mock_response)
+        allow(subject.solr_repository).to receive(:send_and_receive).with('select', hash_including("q" => "{!lucene}field_name:(a OR b)")).and_return(@mock_response)
         subject.get_solr_response_for_field_values('field_name', ['a', 'b'])
       end
 
       it "should escape crazy identifiers" do
-        allow(subject).to receive(:find).with(hash_including(:q => "field_name:(\"h://\\\"\\\'\")")).and_return(@mock_response)
+        allow(subject.solr_repository).to receive(:send_and_receive).with('select', hash_including("q" => "{!lucene}field_name:(\"h://\\\"\\\'\")")).and_return(@mock_response)
         subject.get_solr_response_for_field_values('field_name', 'h://"\'')
       end
     end
@@ -1297,7 +1289,7 @@ describe Blacklight::SolrHelper do
 #  nearby on shelf
   it "should raise a Blacklight exception if RSolr can't connect to the Solr instance" do
     allow(blacklight_solr).to receive(:send_and_receive).and_raise(Errno::ECONNREFUSED)
-    expect { subject.find(:a => 123) }.to raise_exception(/Unable to connect to Solr instance/)
+    expect { subject.query_solr }.to raise_exception(/Unable to connect to Solr instance/)
   end
 
   describe "grouped_key_for_results" do
