@@ -1,15 +1,15 @@
 # -*- encoding : utf-8 -*-
 # SolrHelper is a controller layer mixin. It is in the controller scope: request params, session etc.
-# 
+#
 # NOTE: Be careful when creating variables here as they may be overriding something that already exists.
 # The ActionController docs: http://api.rubyonrails.org/classes/ActionController/Base.html
 #
 # Override these methods in your own controller for customizations:
-# 
+#
 #   class CatalogController < ActionController::Base
-#   
+#
 #     include Blacklight::Catalog
-#   
+#
 #     def solr_search_params
 #       super.merge :per_page=>10
 #     end
@@ -21,10 +21,10 @@
 #   end
 #
 #   class CatalogController < ActionController::Base
-#   
+#
 #     include Blacklight::Catalog
 #     include LocalSolrHelperExtension
-#   
+#
 #     def solr_search_params
 #       super.merge :per_page=>10
 #     end
@@ -42,7 +42,7 @@
 #   class CatalogController < ApplicationController
 #     include LocalSolrHelperExtension
 #     include Blacklight::Catalog
-#   end  
+#   end
 
 module Blacklight::SolrHelper
   extend ActiveSupport::Concern
@@ -102,7 +102,7 @@ module Blacklight::SolrHelper
     end
   end
 
-  	
+
   # a solr query method
   # given a user query,
   # @return [Blacklight::SolrResponse] the solr response object
@@ -119,7 +119,7 @@ module Blacklight::SolrHelper
     solr_response = solr_repository.find id, extra_controller_params
     [solr_response, solr_response.documents.first]
   end
-  
+
   ##
   # Retrieve a set of documents by id
   # @overload get_solr_response_for_document_ids(ids, extra_controller_params)
@@ -209,7 +209,7 @@ module Blacklight::SolrHelper
 
     [solr_response, [prev_doc, next_doc]]
   end
-  
+
   # a solr query method
   # does a standard search but returns a simplified object.
   # an array is returned, the first item is the query string,
@@ -225,13 +225,13 @@ module Blacklight::SolrHelper
   end
 
   ##
-  # The key to use to retrieve the grouped field to display 
+  # The key to use to retrieve the grouped field to display
   def grouped_key_for_results
     blacklight_config.index.group
   end
 
   def solr_repository
-    @solr_repository ||= Blacklight::SolrRepository.new(blacklight_config)
+    @solr_repository ||= blacklight_config.repository_type.new(blacklight_config)
   end
 
 end

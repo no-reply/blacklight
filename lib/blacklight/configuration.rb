@@ -33,6 +33,7 @@ module Blacklight
           # the model to load solr response documents into; set below in #initialize_default_values
           :solr_document_model => nil,
           :solr_response_model => nil,
+          :repository_type => nil,
           # The solr rqeuest handler to use when requesting only a single document
           :document_solr_request_handler => 'document',
           # THe path to send single document requests to solr
@@ -145,6 +146,10 @@ module Blacklight
 
     def solr_response_model
       super || Blacklight::SolrResponse
+    end
+
+    def repository_type
+      super || SolrRepository
     end
 
     ##
