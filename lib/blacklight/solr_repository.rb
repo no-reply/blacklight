@@ -1,15 +1,6 @@
 module Blacklight
-  class SolrRepository
-    attr_accessor :blacklight_config, :blacklight_solr
-
-    # ActiveSupport::Benchmarkable requires a logger method
-    attr_accessor :logger
-
-    include ActiveSupport::Benchmarkable
-
-    def initialize blacklight_config
-      @blacklight_config = blacklight_config
-    end
+  class SolrRepository < Repository
+    attr_accessor :blacklight_solr
 
     ##
     # Find a single solr document result (by id) using the document configuration
@@ -39,6 +30,8 @@ module Blacklight
     #   @param [Hash] parameters for RSolr::Client#send_and_receive
     # @return [Blacklight::SolrResponse] the solr response object
     def send_and_receive(path, solr_params = {})
+      # In later versions of Rails, the #benchmark method can do timing
+      # better for us.
       benchmark("Solr fetch", level: :debug) do
         key = blacklight_config.http_method == :post ? :data : :params
         res = blacklight_solr.send_and_receive(path, {key=>solr_params.to_hash, method:blacklight_config.http_method})
@@ -58,12 +51,9 @@ module Blacklight
     end
 
     protected
+
     def blacklight_solr_config
       @blacklight_solr_config ||= Blacklight.solr_config
-    end
-
-    def logger
-      @logger ||= Rails.logger if defined? Rails
     end
   end
 end
