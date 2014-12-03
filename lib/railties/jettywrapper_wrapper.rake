@@ -27,7 +27,7 @@ namespace :jetty do
   end
 
   desc "unzip the downloaded jetty archive"
-  task :unzip [:container] do |_, args|
+  task :unzip, [:container] do |_, args|
     args.with_defaults(container: "solr")
 
     Jettywrapper.url = URLS[args.container.to_sym]
