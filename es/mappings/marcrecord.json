@@ -1,0 +1,40 @@
+{
+    "marcrecord": {
+        "properties": {
+            "id": { "type": "string", "index": "not_analyzed" },
+            "timestamp": { "type": "date" },
+            "text": { "type": "string", "index": "analyzed" },
+
+            "marc_display": { "type": "string", "index": "no" },
+            "title_display": { "type": "string", "index": "no" },
+            "title_vern_display": { "type": "string", "index": "no" },
+            "subtitle_display": { "type": "string", "index": "no" },
+            "subtitle_vern_display": { "type": "string", "index": "no" },
+            "author_display": { "type": "string", "index": "no" },
+            "author_vern_display": { "type": "string", "index": "no" },
+
+            "isbn_t": { "type": "string", "index": "analyzed" },
+            "language_facet": { "type": "string", "index": "not_analyzed" },
+            "subject_topic_facet": { "type": "string", "index": "not_analyzed" },
+            "subject_era_facet": { "type": "string", "index": "not_analyzed" },
+            "subject_geo_facet": { "type": "string", "index": "not_analyzed" },
+
+            "pub_date": { "type": "string", "index": "not_analyzed" },
+            "pub_date_sort": { "type": "integer" },
+            "format": { "type": "string", "index": "not_analyzed" },
+
+            "title_t": { "type": "string", "index": "analyzed", "copy_to": "title_unstem_search" },
+            "subtitle_t": { "type": "string", "index": "analyzed", "copy_to": "subtitle_unstem_search" },
+            "title_addl_t": { "type": "string", "index": "analyzed", "copy_to": "title_addl_unstem_search" },
+            "title_added_entry_t": { "type": "string", "index": "analyzed", "copy_to": "title_added_entry_unstem_search" },
+            "title_series_t": { "type": "string", "index": "analyzed", "copy_to": "title_series_unstem_search" },
+            "author_series_t": { "type": "string", "index": "analyzed", "copy_to": "author_unstem_search" },
+            "author_addl_t": { "type": "string", "index": "analyzed", "copy_to": "author_addl_unstem_search" },
+            "subject_t": { "type": "string", "index": "analyzed", "copy_to": "subject_unstem_search" },
+            "subject_addl_t": { "type": "string", "index": "analyzed", "copy_to": "subject_addl_unstem_search" },
+            "subject_topic_facet": { "type": "string", "index": "analyzed", "copy_to": "subject_topic_unstem_search" },
+
+            "pub_date": { "type": "integer", "copy_to": "pub_date_sort" }
+        }
+    }
+}

@@ -1,3 +1,4 @@
+require "elasticsearch"
 
 namespace :blacklight do
   # task to clean out old, unsaved searches
@@ -8,6 +9,32 @@ namespace :blacklight do
   task :delete_old_searches, [:days_old] => [:environment] do |t, args|
     args.with_defaults(:days_old => 7)    
     Search.delete_old_searches(args[:days_old].to_i)
+  end
+
+  namespace :es do
+    desc "Put sample data into elasticsearch"
+    task :seed do
+      docs = YAML::load(File.open(File.join(Blacklight.root, 'solr', 'sample_solr_documents.yml')))
+
+      # TODO: call Blacklight::ElasticsearchRepository
+      client = Elasticsearch::Client.new hosts: ['0.0.0.0:8983']
+      docs.each do |doc|
+        client.index index: :marctest, type: :marcrecord, body: doc
+      end
+    end
+
+    desc "Create marcrecord test record mapping"
+    task :create_index do
+      mapping = JSON::load(File.open(File.join(Blacklight.root, 'es', 'mappings', 'marcrecord.json')))
+      client = Elasticsearch::Client.new hosts: ['0.0.0.0:8983']
+
+      # Clear out testdata before indexing
+      begin
+        client.indices.delete index: :marctest
+      rescue Elasticsearch::Transport::Transport::Errors::NotFound
+      end
+      client.indices.create index: :marctest, body: {mappings: mapping}
+    end
   end
 
   namespace :solr do
@@ -38,6 +65,21 @@ namespace :blacklight do
       end
 
       exit 1 if errors > 0
+    end
+
+    desc "Check the Elasticsearch connection"
+    task :es do
+      client = Elasticsearch::Client.new hosts: ['0.0.0.0:8983']
+      begin
+        failed = !client.ping
+      rescue Faraday::ConnectionFailed
+        failed = true
+      end
+
+      if failed
+        puts "Unable to connect to Elasticsearch"
+        exit 1
+      end
     end
 
     task :controller, [:controller_name] => [:environment] do |_, args|
