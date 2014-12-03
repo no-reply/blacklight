@@ -16,6 +16,7 @@ module Blacklight
   autoload :RequestBuilders, 'blacklight/request_builders'
 
   autoload :ElasticsearchRepository, 'blacklight/elasticsearch_repository'
+  autoload :ElasticsearchRequestBuilders, 'blacklight/elasticsearch_request_builders'
 
   autoload :Exceptions, 'blacklight/exceptions'
 
@@ -31,7 +32,9 @@ module Blacklight
   autoload :Routes, 'blacklight/routes'
 
   autoload :OpenStructWithHashAccess, 'blacklight/utils'
+  autoload :Response, 'blacklight/response'
   autoload :SolrResponse, 'blacklight/solr_response'
+  autoload :ElasticsearchResponse, 'blacklight/elasticsearch_response'
   autoload :Facet, 'blacklight/facet'
 
   extend SearchFields
